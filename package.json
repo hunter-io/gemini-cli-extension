@@ -1,7 +1,7 @@
 {
   "name": "@hunter-io/gemini-cli-extension",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Hunter Gemini CLI extension (MCP + job-named skills)",
   "license": "MIT",
   "scripts": {

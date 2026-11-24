@@ -4,20 +4,29 @@ Find and verify professional email addresses, search contacts by domain, enrich 
 
 The extension connects to the hosted Hunter MCP server (`https://mcp.hunter.io/mcp`). It ships the same **13 job-named skills** as the Cursor plugin, and the same jobs as the Claude plugin (`/hunter:email-finder` there is `hunter-email-finder` here). The skills are copies of `services/cursor-plugin/skills/`. A test fails when the two copies differ.
 
-The public mirror is [`hunter-io/gemini-cli-extension`](https://github.com/hunter-io/gemini-cli-extension). It stays empty until the first sync after this folder lands on `master` (see [Publish](#publish)).
+The public mirror is [`hunter-io/gemini-cli-extension`](https://github.com/hunter-io/gemini-cli-extension). Each merge to `master` that changes this folder syncs it to the mirror (see [Publish](#publish)).
 
 ## Installation
 
-Install from a local checkout of this monorepo:
-
-```sh
-gemini extensions link /absolute/path/to/hunter/services/gemini-cli-extension
-```
-
-After the first sync, install from the public mirror:
+Install from the public mirror:
 
 ```sh
 gemini extensions install https://github.com/hunter-io/gemini-cli-extension
+```
+
+Gemini CLI 0.70.0 to 0.71.1 cannot install an extension from a URL. The install stops with `Use of "GIT_CONFIG_SYSTEM" is not permitted` ([google-gemini/gemini-cli#30416](https://github.com/google-gemini/gemini-cli/issues/30416)). With these versions, clone the mirror and install from the folder:
+
+```sh
+git clone https://github.com/hunter-io/gemini-cli-extension
+gemini extensions install ./gemini-cli-extension
+```
+
+An extension installed from a folder does not update itself. When a fixed Gemini CLI is out, install again from the URL.
+
+To work on the extension, link a local checkout of this monorepo:
+
+```sh
+gemini extensions link /absolute/path/to/hunter/services/gemini-cli-extension
 ```
 
 Restart Gemini CLI. Then run `gemini extensions list` and make sure that it shows the **hunter** MCP server and the 13 `hunter-*` agent skills.
@@ -34,7 +43,7 @@ Gemini CLI signs in to Hunter with OAuth. You do not need an API key.
 
 To sign in again, run `/mcp auth hunter` in Gemini CLI. Gemini CLI stores the token and refreshes it when it expires.
 
-Gemini CLI registers itself with Hunter through dynamic client registration (`https://hunter.io/oauth/register`). The manifest also gives the Hunter OAuth endpoints. Without them, `/mcp auth hunter` stops with a `ResourceMismatchError`: the server metadata names the resource `https://mcp.hunter.io`, and Gemini CLI expects `https://mcp.hunter.io/mcp`.
+The manifest gives no OAuth endpoints. The 401 response from `https://mcp.hunter.io/mcp` points Gemini CLI to the server metadata, and the metadata names `https://hunter.io` as the authorization server. Gemini CLI then registers itself with Hunter through dynamic client registration (`https://hunter.io/oauth/register`).
 
 ### Headless machines (API key)
 
@@ -108,7 +117,7 @@ The [Gemini CLI extensions gallery](https://geminicli.com/extensions/) indexes p
 
 The monorepo is private, so the gallery reads the public mirror [`hunter-io/gemini-cli-extension`](https://github.com/hunter-io/gemini-cli-extension), which has the `gemini-cli-extension` topic. On every push to `master` that touches this folder, `.github/workflows/plugin-sync.yml` mirrors `services/gemini-cli-extension/` onto the `main` branch of that repository. The Claude, ChatGPT, and Cursor packages use the same job. Edit here. Do not push to the public repository by hand.
 
-The sync job reads the `GEMINI_CLI_EXTENSION_DEPLOY_KEY` secret. A `hunter-io/hunter` admin sets it once:
+The sync job reads the `GEMINI_CLI_EXTENSION_DEPLOY_KEY` secret, set on 2026-11-24. `gh repo deploy-key add` ties the deploy key to the `gh` token of the person who adds it. If that person revokes the `gh` authorization, GitHub removes the key and the sync fails. To replace the key, run:
 
 ```sh
 ssh-keygen -t ed25519 -N "" -C "plugin-sync gemini-cli-extension" -f gemini-deploy-key
@@ -117,7 +126,7 @@ gh secret set GEMINI_CLI_EXTENSION_DEPLOY_KEY --repo hunter-io/hunter < gemini-d
 rm gemini-deploy-key gemini-deploy-key.pub
 ```
 
-The gallery crawls repositories with that topic once a day, and it has no submission step. After the first sync, the extension appears at [geminicli.com/extensions](https://geminicli.com/extensions/) if it passes the gallery validation.
+The gallery crawls repositories with that topic once a day, and it has no submission step. The extension appears at [geminicli.com/extensions](https://geminicli.com/extensions/) if it passes the gallery validation.
 
 ## Development
 

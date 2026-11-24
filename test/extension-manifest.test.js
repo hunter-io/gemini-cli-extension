@@ -70,17 +70,8 @@ test("hunter server uses Streamable HTTP with OAuth, not a key header", () => {
   assert.equal(hunter.headers, undefined)
   assert.equal(hunter.trust, undefined)
 
-  // Explicit endpoints keep `/mcp auth hunter` off the discovery path, which
-  // rejects the origin-level `resource` in mcp.hunter.io's RFC 9728 metadata.
-  assert.deepEqual(hunter.oauth, {
-    enabled: true,
-    issuer: "https://hunter.io",
-    authorizationUrl: "https://hunter.io/oauth/authorize",
-    tokenUrl: "https://hunter.io/oauth/token",
-    scopes: ["read", "write"],
-    // With an issuer set, Gemini CLI otherwise demands an RFC 9207 `iss` on the callback.
-    authorizationResponseIssParameterSupported: false,
-  })
+  // Gemini CLI discovers the endpoints from the WWW-Authenticate header on the /mcp 401.
+  assert.deepEqual(hunter.oauth, { enabled: true, scopes: ["read", "write"] })
 })
 
 test("ships the 13 hunter-prefixed job-named skills covering the MCP surface", () => {
