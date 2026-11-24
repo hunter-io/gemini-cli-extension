@@ -1,0 +1,19 @@
+{
+  "name": "hunter",
+  "version": "0.1.0",
+  "description": "Find and verify professional email addresses, search contacts by domain, enrich company and person data, organize leads and lists, run outreach sequences, and push to your CRM -- directly in Gemini CLI.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "hunter": {
+      "httpUrl": "https://mcp.hunter.io/mcp",
+      "oauth": {
+        "enabled": true,
+        "issuer": "https://hunter.io",
+        "authorizationUrl": "https://hunter.io/oauth/authorize",
+        "tokenUrl": "https://hunter.io/oauth/token",
+        "scopes": ["read", "write"],
+        "authorizationResponseIssParameterSupported": false
+      }
+    }
+  }
+}
